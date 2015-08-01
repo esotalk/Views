@@ -77,5 +77,35 @@ class ETPlugin_Views extends ETPlugin {
 		$search->orderBy("c.views ".($negate ? "ASC" : "DESC"));
 		$search->sql->useIndex("conversation_views");
 	}
+	
+	// Construct and process the settings form.
+	public function settings($sender)
+	{
+		// Set up the settings form.
+		$form = ETFactory::make("form");
+		$form->action = URL("admin/plugins/settings/Views");
+		$form->setValue("allowSearchViews",C("plugin.Views.allowSearchViews"));
+
+		// If the form was submitted...
+		if ($form->validPostBack("viewsSave")) {
+
+			// Construct an array of config options to write.
+			$config = array();
+			$config["plugin.Views.allowSearchViews"] = $form->getValue("allowSearchViews");
+
+			if (!$form->errorCount()) {
+
+				// Write the config file.
+				ET::writeConfig($config);
+
+				$sender->message(T("message.changesSaved"), "success autoDismiss");
+				$sender->redirect(URL("admin/plugins"));
+
+			}
+		}
+
+		$sender->data("viewsSettingsForm", $form);
+		return $this->view("settings");
+	}
 
 }
